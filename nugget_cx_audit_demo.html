@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Nugget CX Audit Tool</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: system-ui, sans-serif; background: #F7F9FC; color: #1A1F36; }
+.header { background: #1E2761; color: #fff; padding: 14px 28px; display: flex; align-items: center; gap: 12px; }
+.header h1 { font-size: 17px; font-weight: 500; font-family: Georgia, serif; }
+.badge { font-size: 10px; font-weight: 600; background: #CADCFC; color: #1E2761; padding: 3px 9px; border-radius: 3px; letter-spacing: 0.05em; }
+.demo-tag { font-size: 10px; font-weight: 600; background: #E1F5EE; color: #085041; padding: 3px 9px; border-radius: 3px; letter-spacing: 0.05em; }
+.container { display: flex; height: calc(100vh - 50px); }
+.left { width: 36%; background: #fff; border-right: 1px solid #E8EEF7; padding: 24px; overflow-y: auto; }
+.right { width: 64%; padding: 28px 32px; overflow-y: auto; }
+.left h2 { font-size: 15px; font-weight: 500; font-family: Georgia, serif; margin-bottom: 20px; color: #1E2761; }
+.field { margin-bottom: 16px; }
+.field label { display: block; font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 5px; }
+.field input, .field textarea { width: 100%; padding: 9px 12px; border: 1px solid #D1D9E8; border-radius: 6px; font-size: 14px; font-family: system-ui; background: #F7F9FC; color: #1A1F36; transition: border 0.15s; }
+.field input:focus, .field textarea:focus { outline: none; border-color: #1E2761; background: #fff; }
+.field textarea { min-height: 64px; resize: vertical; }
+.btn { width: 100%; padding: 11px; background: #1E2761; color: #fff; border: none; border-radius: 6px; font-size: 15px; font-family: Georgia, serif; cursor: pointer; margin-top: 6px; }
+.btn:hover { background: #16205A; }
+.btn:disabled { background: #94A3B8; cursor: not-allowed; }
+.placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 80%; color: #94A3B8; font-size: 13px; text-align: center; gap: 10px; line-height: 1.7; }
+.spinner-wrap { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 80%; gap: 14px; color: #64748B; font-size: 13px; }
+.spinner { width: 28px; height: 28px; border: 2.5px solid #E8EEF7; border-top-color: #1E2761; border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.report-header { background: #1E2761; color: #fff; padding: 16px 20px; border-radius: 8px; margin-bottom: 20px; }
+.report-header h2 { font-size: 17px; font-weight: 500; font-family: Georgia, serif; color: #fff; margin-bottom: 3px; }
+.report-header p { font-size: 11px; color: #CADCFC; }
+.metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 24px; }
+.metric { background: #F7F9FC; border: 1px solid #E8EEF7; border-radius: 8px; padding: 12px 14px; }
+.metric .val { font-size: 20px; font-weight: 500; font-family: Georgia, serif; }
+.metric .val.red { color: #A32D2D; }
+.metric .val.teal { color: #0F6E56; }
+.metric .val.navy { color: #1E2761; }
+.metric .lbl { font-size: 10px; color: #64748B; margin-top: 3px; text-transform: uppercase; letter-spacing: 0.04em; }
+.section { margin-bottom: 22px; }
+.section h3 { font-size: 12px; font-weight: 600; color: #1E2761; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid #E8EEF7; }
+.section p { font-size: 13px; line-height: 1.75; color: #334155; margin-bottom: 8px; }
+.section p:last-child { margin-bottom: 0; }
+.intent-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+.intent-pill { background: #E6F1FB; color: #0C447C; font-size: 11px; font-weight: 500; padding: 4px 10px; border-radius: 20px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Nugget CX Audit Tool</h1>
+  <span class="badge">AI CONSULTANT</span>
+  <span class="demo-tag">DEMO MODE</span>
+</div>
+
+<div class="container">
+  <div class="left">
+    <h2>Client details</h2>
+    <div class="field"><label>Company name</label><input id="company" type="text" placeholder="e.g. Zepto, Nykaa, BigBasket"></div>
+    <div class="field"><label>Monthly ticket volume</label><input id="volume" type="number" placeholder="e.g. 500000"></div>
+    <div class="field"><label>Current CX tools</label><textarea id="tools" placeholder="e.g. Zendesk, Freshdesk, WhatsApp BSP"></textarea></div>
+    <div class="field"><label>Top ticket types</label><textarea id="types" placeholder="e.g. wrong item, refund, delivery delay"></textarea></div>
+    <div class="field"><label>Cost per ticket (Rs.)</label><input id="cost" type="number" placeholder="e.g. 12"></div>
+    <button class="btn" id="btn" onclick="generate()">Generate audit report</button>
+  </div>
+
+  <div class="right" id="result">
+    <div class="placeholder">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity:0.3"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="7" y1="8" x2="17" y2="8"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="7" y1="16" x2="13" y2="16"/></svg>
+      Fill in the client details and click Generate.<br>The audit report will appear here.
+    </div>
+  </div>
+</div>
+
+<script>
+const taxonomy = {
+  "wrong item": "product_issue",
+  "refund": "refund_request",
+  "delivery delay": "logistics",
+  "kyc": "compliance",
+  "account": "account_mgmt",
+  "payment": "payment_issue",
+  "damaged": "product_issue",
+  "missing": "product_issue",
+  "cancel": "cancellation",
+};
+
+function classifyIntent(type) {
+  for (const [key, label] of Object.entries(taxonomy)) {
+    if (type.toLowerCase().includes(key)) return label;
+  }
+  return "general_query";
+}
+
+function fmt(n) {
+  return "Rs. " + n.toLocaleString("en-IN");
+}
+
+function buildDiagnosis(company, tools, ticketTypes, toolList) {
+  const toolStr = toolList.join(", ");
+  const typeStr = ticketTypes.join(", ");
+
+  return {
+    stackDiagnosis: `${company}'s CX stack runs across ${toolList.length} disconnected systems: ${toolStr}. None of these tools share real-time data at the moment a ticket opens. An agent handling a ${ticketTypes[0] || "support"} complaint has no visibility into the live order state or payment status without manually switching between multiple tabs and re-keying information across platforms.
+
+This fragmentation means every ticket resolution starts from a blank slate. The operational cost of that manual lookup is embedded into every single interaction at scale. At ${company}'s ticket volume, this is not an inefficiency at the edges — it is the core structural cost of the entire CX operation.`,
+
+    bottleneck: `The single biggest constraint holding back automation at ${company} is that the AI layer has no action capability. The ${typeStr} tickets that make up the bulk of volume are all structurally resolvable without a human — but only if the system can verify the claim and trigger the outcome. Today it cannot do either.
+
+${ticketTypes.includes("product_issue") ? `Wrong item tickets require image validation before a refund can be approved. ` : ""}${ticketTypes.includes("refund_request") ? `Refund requests require a write operation back to the payment gateway. ` : ""}${ticketTypes.includes("logistics") ? `Delivery delay tickets require a live read from the OMS. ` : ""}None of these operations are exposed to the current AI layer, so every ticket that should take 30 seconds takes 4 to 6 hours instead.`,
+
+    solutionArchitecture: `The Nugget deployment for ${company} is built across four layers. The first assembles live context at ticket creation — order status, payment state, and customer history pulled via API before the AI processes the message. The second layer classifies intent and routes each ticket to the most cost-efficient model capable of resolving it accurately, keeping inference cost low at scale.
+
+The third layer activates a vision model for image-based claims — ${company}'s highest-volume refund category. The model reads the customer-uploaded photo, validates the claim against the order record, and either approves the refund automatically or flags it with a fraud score. The fourth layer gives the AI write access to the payment gateway and OMS so it executes the resolution directly. No agent required for 80% of cases.`
+  };
+}
+
+function generate() {
+  const company = document.getElementById("company").value.trim();
+  const volume = document.getElementById("volume").value.trim();
+  const tools = document.getElementById("tools").value.trim();
+  const types = document.getElementById("types").value.trim();
+  const cost = document.getElementById("cost").value.trim();
+
+  if (!company || !volume || !tools || !types || !cost) {
+    document.getElementById("result").innerHTML =
+      '<div style="background:#FEF2F2;border:1px solid #FCA5A5;border-radius:8px;padding:14px 18px;color:#991B1B;font-size:13px;">Please fill in all fields before generating the report.</div>';
+    return;
+  }
+
+  const btn = document.getElementById("btn");
+  btn.disabled = true;
+  btn.textContent = "Generating...";
+  document.getElementById("result").innerHTML =
+    '<div class="spinner-wrap"><div class="spinner"></div>Analysing CX stack...</div>';
+
+  setTimeout(() => {
+    const vol = parseInt(volume);
+    const costPer = parseInt(cost);
+    const currentCost = vol * costPer;
+    const projectedCost = Math.round((vol * 0.8 * 2) + (vol * 0.2 * costPer));
+    const saving = currentCost - projectedCost;
+    const savingPct = Math.round((saving / currentCost) * 100);
+    const toolList = tools.split(",").map(t => t.trim());
+    const rawTypes = types.split(",").map(t => t.trim());
+    const classified = rawTypes.map(classifyIntent);
+    const { stackDiagnosis, bottleneck, solutionArchitecture } = buildDiagnosis(company, tools, classified, toolList);
+
+    const pillsHTML = classified.map(c =>
+      `<span class="intent-pill">${c.replace("_", " ")}</span>`
+    ).join("");
+
+    document.getElementById("result").innerHTML = `
+      <div class="report-header">
+        <h2>${company} — CX Audit Report</h2>
+        <p>April 2026 &nbsp;|&nbsp; ${vol.toLocaleString("en-IN")} tickets per month &nbsp;|&nbsp; Prepared by Nugget AI Consultant</p>
+      </div>
+
+      <div class="metrics">
+        <div class="metric"><div class="val red">${fmt(currentCost)}</div><div class="lbl">Current monthly cost</div></div>
+        <div class="metric"><div class="val teal">${fmt(projectedCost)}</div><div class="lbl">Projected cost with Nugget</div></div>
+        <div class="metric"><div class="val navy">${fmt(saving)} saved</div><div class="lbl">Monthly saving (${savingPct}% reduction)</div></div>
+      </div>
+
+      <div class="intent-row">${pillsHTML}</div>
+
+      <div class="section"><h3>Stack diagnosis</h3><p>${stackDiagnosis.replace(/\n\n/g, '</p><p>')}</p></div>
+      <div class="section"><h3>Bottleneck</h3><p>${bottleneck.replace(/\n\n/g, '</p><p>')}</p></div>
+      <div class="section"><h3>Solution architecture</h3><p>${solutionArchitecture.replace(/\n\n/g, '</p><p>')}</p></div>
+      <div class="section"><h3>ROI estimate</h3>
+        <p>At ${vol.toLocaleString("en-IN")} tickets per month and a current blended cost of Rs. ${costPer} per ticket, ${company} is spending ${fmt(currentCost)} every month on customer support operations. Under the Nugget architecture, 80% of tickets resolve at an AI cost of Rs. 2 per ticket and the remaining 20% continue at the current rate.</p>
+        <p>The blended cost drops to Rs. ${Math.round(projectedCost/vol)} per ticket — a monthly spend of ${fmt(projectedCost)}. The monthly saving is ${fmt(saving)}, a ${savingPct}% reduction. Annualised, that is ${fmt(saving * 12)} in recovered margin. Payback period on a standard Nugget implementation at this ticket volume is under 30 days.</p>
+      </div>
+    `;
+
+    btn.disabled = false;
+    btn.textContent = "Generate audit report";
+  }, 1800);
+}
+</script>
+</body>
+</html>
